@@ -1,0 +1,202 @@
+import en from '#i18n/en.json';
+import { getAssetUrl, memoryLaneTitle, semverToName } from '#lib/utils.ts';
+import { factory } from '#test/unit/factories.ts';
+import { AssetTypeEnum, MemoryType, type MemoryResponseDto } from '@immich/sdk';
+import { addMessages, init } from 'svelte-i18n';
+import { get } from 'svelte/store';
+
+describe('utils', () => {
+  describe(getAssetUrl.name, () => {
+    it('should return thumbnail URL for static images', () => {
+      const asset = factory.asset({
+        originalPath: 'image.jpg',
+        originalMimeType: 'image/jpeg',
+        type: AssetTypeEnum.Image,
+      });
+
+      const url = getAssetUrl({ asset });
+
+      // Should return a thumbnail URL (contains /thumbnail)
+      expect(url).toContain('/thumbnail');
+      expect(url).toContain(asset.id);
+    });
+
+    it('should return thumbnail URL for static gifs', () => {
+      const asset = factory.asset({
+        originalPath: 'image.gif',
+        originalMimeType: 'image/gif',
+        type: AssetTypeEnum.Image,
+      });
+
+      const url = getAssetUrl({ asset });
+
+      expect(url).toContain('/thumbnail');
+      expect(url).toContain(asset.id);
+    });
+
+    it('should return thumbnail URL for static webp images', () => {
+      const asset = factory.asset({
+        originalPath: 'image.webp',
+        originalMimeType: 'image/webp',
+        type: AssetTypeEnum.Image,
+      });
+
+      const url = getAssetUrl({ asset });
+
+      expect(url).toContain('/thumbnail');
+      expect(url).toContain(asset.id);
+    });
+
+    it('should return original URL for animated gifs', () => {
+      const asset = factory.asset({
+        originalPath: 'image.gif',
+        originalMimeType: 'image/gif',
+        type: AssetTypeEnum.Image,
+        duration: 2000,
+      });
+
+      const url = getAssetUrl({ asset });
+
+      // Should return original URL (contains /original)
+      expect(url).toContain('/original');
+      expect(url).toContain(asset.id);
+    });
+
+    it('should return original URL for animated webp images', () => {
+      const asset = factory.asset({
+        originalPath: 'image.webp',
+        originalMimeType: 'image/webp',
+        type: AssetTypeEnum.Image,
+        duration: 2000,
+      });
+
+      const url = getAssetUrl({ asset });
+
+      expect(url).toContain('/original');
+      expect(url).toContain(asset.id);
+    });
+
+    it('should return original URL for video assets with forceOriginal', () => {
+      const asset = factory.asset({
+        originalPath: 'video.mp4',
+        originalMimeType: 'video/mp4',
+        type: AssetTypeEnum.Video,
+      });
+
+      const url = getAssetUrl({ asset, forceOriginal: true });
+
+      expect(url).toContain('/original');
+      expect(url).toContain(asset.id);
+    });
+
+    it('should return thumbnail URL for video assets without forceOriginal', () => {
+      const asset = factory.asset({
+        originalPath: 'video.mp4',
+        originalMimeType: 'video/mp4',
+        type: AssetTypeEnum.Video,
+      });
+
+      const url = getAssetUrl({ asset });
+
+      expect(url).toContain('/thumbnail');
+      expect(url).toContain(asset.id);
+    });
+
+    it('should return thumbnail URL for static images in shared link even with download and showMetadata permissions', () => {
+      const asset = factory.asset({
+        originalPath: 'image.gif',
+        originalMimeType: 'image/gif',
+        type: AssetTypeEnum.Image,
+      });
+      const sharedLink = factory.sharedLink({ allowDownload: true, showMetadata: true, assets: [asset] });
+
+      const url = getAssetUrl({ asset, sharedLink });
+
+      expect(url).toContain('/thumbnail');
+      expect(url).toContain(asset.id);
+    });
+
+    it('should return original URL for animated images in shared link with download and showMetadata permissions', () => {
+      const asset = factory.asset({
+        originalPath: 'image.gif',
+        originalMimeType: 'image/gif',
+        type: AssetTypeEnum.Image,
+        duration: 2000,
+      });
+      const sharedLink = factory.sharedLink({ allowDownload: true, showMetadata: true, assets: [asset] });
+
+      const url = getAssetUrl({ asset, sharedLink });
+
+      expect(url).toContain('/original');
+      expect(url).toContain(asset.id);
+    });
+
+    it('should return thumbnail URL (not original) for animated images when shared link download permission is false', () => {
+      const asset = factory.asset({
+        originalPath: 'image.gif',
+        originalMimeType: 'image/gif',
+        type: AssetTypeEnum.Image,
+        duration: 2000,
+      });
+      const sharedLink = factory.sharedLink({ allowDownload: false, assets: [asset] });
+
+      const url = getAssetUrl({ asset, sharedLink });
+
+      expect(url).toContain('/thumbnail');
+      expect(url).not.toContain('/original');
+      expect(url).toContain(asset.id);
+    });
+
+    it('should return thumbnail URL (not original) for animated images when shared link showMetadata permission is false', () => {
+      const asset = factory.asset({
+        originalPath: 'image.gif',
+        originalMimeType: 'image/gif',
+        type: AssetTypeEnum.Image,
+        duration: 2000,
+      });
+      const sharedLink = factory.sharedLink({ showMetadata: false, assets: [asset] });
+
+      const url = getAssetUrl({ asset, sharedLink });
+
+      expect(url).toContain('/thumbnail');
+      expect(url).not.toContain('/original');
+      expect(url).toContain(asset.id);
+    });
+  });
+  describe('semverToName', () => {
+    it('should not append release candidate tag if prelease is not set', () => {
+      expect(semverToName({ major: 3, minor: 0, patch: 0, prerelease: null, featureLevel: 1 })).toEqual('v3.0.0');
+    });
+
+    it('should append release candidate if set', () => {
+      expect(semverToName({ major: 3, minor: 0, patch: 0, prerelease: 0, featureLevel: 1 })).toEqual('v3.0.0-rc.0');
+    });
+  });
+
+  describe('memoryLaneTitle', () => {
+    beforeAll(async () => {
+      addMessages('en', en);
+      await init({ fallbackLocale: 'en', initialLocale: 'en' });
+    });
+
+    const birthday = (data: Partial<MemoryResponseDto['data']>, memoryAt = '2026-09-22T00:00:00.000Z') =>
+      get(memoryLaneTitle)({
+        type: MemoryType.Birthday,
+        memoryAt,
+        data: { year: 1990, personName: 'Alex', ...data },
+      } as MemoryResponseDto);
+
+    it('should name the person whose birthday it is', () => {
+      expect(birthday({ year: 1990 })).toBe("Alex's birthday");
+    });
+
+    it('should not depend on the age, which the viewer shows per photo', () => {
+      expect(birthday({ year: 2025 })).toBe("Alex's birthday");
+      expect(birthday({ year: 2026 }, '2027-01-04T00:00:00.000Z')).toBe("Alex's birthday");
+    });
+
+    it('should fall back when the person has no name', () => {
+      expect(birthday({ personName: undefined })).toBe('Unknown');
+    });
+  });
+});

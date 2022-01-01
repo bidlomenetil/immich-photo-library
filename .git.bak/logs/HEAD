@@ -1,0 +1,6 @@
+0000000000000000000000000000000000000000 5f31add219150df98a83767060d8db4e8ea7fc58 Alinur Dzjeenbekov <alinurdzjeenbekov@gmail.com> 1793703243 +0500	commit (initial): chore: import upstream open-source source snapshot
+5f31add219150df98a83767060d8db4e8ea7fc58 d9e8f61c39c475bd802b6d62042091282096948b Alinur Dzjeenbekov <alinurdzjeenbekov@gmail.com> 1793704358 +0500	commit: fix(installer): preserve existing Immich environment on rerun
+d9e8f61c39c475bd802b6d62042091282096948b 4609cdc65beb67bd5c5422e5dd3de6397af1dac8 Alinur Dzjeenbekov <alinurdzjeenbekov@gmail.com> 1793704358 +0500	commit: docs(development): document source setup and restore upstream license notices
+4609cdc65beb67bd5c5422e5dd3de6397af1dac8 ce9701ea152508243f25f2ce2788efa3d05c7266 Alinur Dzjeenbekov <alinurdzjeenbekov@gmail.com> 1793763991 +0500	commit: Final commit
+ce9701ea152508243f25f2ce2788efa3d05c7266 555d7dfe7ecb6edaffbb8efffb1a728ac91855f5 Alinur Dzjeenbekov <alinur@example.com> 1650273989 +0600	filter-branch: rewrite
+555d7dfe7ecb6edaffbb8efffb1a728ac91855f5 555d7dfe7ecb6edaffbb8efffb1a728ac91855f5 Alinur Dzjeenbekov <alinurdzjeenbekov@gmail.com> 1793766708 +0500	checkout: moving from main to main
